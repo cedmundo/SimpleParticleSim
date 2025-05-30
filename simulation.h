@@ -1,0 +1,32 @@
+#ifndef SPS_SIMULATION_H
+#define SPS_SIMULATION_H
+// clang-format off
+#include <SDL3/SDL_events.h>
+#include <SDL3/SDL_video.h>
+#include <SDL3/SDL_gpu.h>
+// clang-format on
+
+#include "camera.h"
+#include "grid.h"
+#include "shader.h"
+
+typedef struct {
+  SDL_Window* window;
+  SDL_GPUDevice* device;
+  SDL_GPUViewport viewport;
+  struct {
+    SPS_Camera camera;
+    SPS_Grid grid;
+  } scene;
+  Uint64 last_tick;
+  float delta_time;
+  float relative_mouse_wheel;
+} SPS_Simulation;
+
+bool SPS_SimulationLoad(SPS_Simulation* state);
+void SPS_SimulationEvent(SPS_Simulation *state, SDL_Event *event);
+void SPS_SimulationUpdate(SPS_Simulation* state);
+bool SPS_SimulationRender(SPS_Simulation* state);
+void SPS_SimulationDestroy(SPS_Simulation* state);
+
+#endif /* SPS_SIMULATION_H */
