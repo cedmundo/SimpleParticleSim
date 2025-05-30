@@ -22,44 +22,44 @@
 #define WZ 14
 #define WW 15
 
-void SOB_Vec3Sub(const SOB_Vec3 a, const SOB_Vec3 b, SOB_Vec3 dest) {
+void SPS_Vec3Sub(const SPS_Vec3 a, const SPS_Vec3 b, SPS_Vec3 dest) {
   dest[0] = a[0] - b[0];
   dest[1] = a[1] - b[1];
   dest[2] = a[2] - b[2];
 }
 
-void SOB_Vec3Add(const SOB_Vec3 a, const SOB_Vec3 b, SOB_Vec3 dest) {
+void SPS_Vec3Add(const SPS_Vec3 a, const SPS_Vec3 b, SPS_Vec3 dest) {
   dest[0] = a[0] + b[0];
   dest[1] = a[1] + b[1];
   dest[2] = a[2] + b[2];
 }
 
-void SOB_Vec3Scale(const SOB_Vec3 a, float s, SOB_Vec3 dest) {
+void SPS_Vec3Scale(const SPS_Vec3 a, float s, SPS_Vec3 dest) {
   dest[0] = a[0] * s;
   dest[1] = a[1] * s;
   dest[2] = a[2] * s;
 }
 
-float SOB_Vec3Dot(const SOB_Vec3 a, const SOB_Vec3 b) {
+float SPS_Vec3Dot(const SPS_Vec3 a, const SPS_Vec3 b) {
   return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 }
 
-void SOB_Vec3Cross(const SOB_Vec3 a, const SOB_Vec3 b, SOB_Vec3 dest) {
+void SPS_Vec3Cross(const SPS_Vec3 a, const SPS_Vec3 b, SPS_Vec3 dest) {
   dest[0] = a[1] * b[2] - a[2] * b[1];
   dest[1] = a[2] * b[0] - a[0] * b[2];
   dest[2] = a[0] * b[1] - a[1] * b[0];
 }
 
-float SOB_Vec3LenSq(const SOB_Vec3 v) {
-  return SOB_Vec3Dot(v, v);
+float SPS_Vec3LenSq(const SPS_Vec3 v) {
+  return SPS_Vec3Dot(v, v);
 }
 
-float SOB_Vec3Len(const SOB_Vec3 v) {
-  return SDL_sqrtf(SOB_Vec3LenSq(v));
+float SPS_Vec3Len(const SPS_Vec3 v) {
+  return SDL_sqrtf(SPS_Vec3LenSq(v));
 }
 
-void SOB_Vec3Normalize(const SOB_Vec3 src, SOB_Vec3 dest) {
-  float n = SOB_Vec3Len(src);
+void SPS_Vec3Normalize(const SPS_Vec3 src, SPS_Vec3 dest) {
+  float n = SPS_Vec3Len(src);
   if (n < SDL_FLT_EPSILON) {
     dest[0] = 0.0f;
     dest[1] = 0.0f;
@@ -67,30 +67,30 @@ void SOB_Vec3Normalize(const SOB_Vec3 src, SOB_Vec3 dest) {
     return;
   }
 
-  SOB_Vec3Scale(src, 1.0f / n, dest);
+  SPS_Vec3Scale(src, 1.0f / n, dest);
 }
 
-void SOB_Vec3Negate(const SOB_Vec3 src, SOB_Vec3 dest) {
+void SPS_Vec3Negate(const SPS_Vec3 src, SPS_Vec3 dest) {
   dest[0] = -src[0];
   dest[1] = -src[1];
   dest[2] = -src[2];
 }
 
-float SOB_QuatAngleTo(const SOB_Quat a, const SOB_Quat b) {
-  float d = SOB_QuatDot(a, b);
+float SPS_QuatAngleTo(const SPS_Quat a, const SPS_Quat b) {
+  float d = SPS_QuatDot(a, b);
   return SDL_acosf(d * d * 2.0f - 1.0f);
 }
 
-float SOB_QuatDot(const SOB_Quat a, const SOB_Quat b) {
+float SPS_QuatDot(const SPS_Quat a, const SPS_Quat b) {
   return a[0] * b[0] + a[1] * b[1] + a[2] * b[2] + a[3] * b[3];
 }
 
-float SOB_QuatLenSq(const SOB_Quat src) {
-  return SOB_QuatDot(src, src);
+float SPS_QuatLenSq(const SPS_Quat src) {
+  return SPS_QuatDot(src, src);
 }
 
-void SOB_QuatInvert(const SOB_Quat src, SOB_Quat dest) {
-  float l_sq = SOB_QuatLenSq(src);
+void SPS_QuatInvert(const SPS_Quat src, SPS_Quat dest) {
+  float l_sq = SPS_QuatLenSq(src);
   if (l_sq < SDL_FLT_EPSILON) {
     dest[0] = 0.0f;
     dest[1] = 0.0f;
@@ -106,9 +106,9 @@ void SOB_QuatInvert(const SOB_Quat src, SOB_Quat dest) {
   dest[3] = src[3] * recip;
 }
 
-void SOB_QuatMakeAxisAngle(const SOB_Vec3 axis, float angle, SOB_Quat dest) {
-  SOB_ALIGN_VEC3 SOB_Vec3 n_axis = {0};
-  float l = SOB_Vec3Len(axis);
+void SPS_QuatMakeAxisAngle(const SPS_Vec3 axis, float angle, SPS_Quat dest) {
+  SPS_ALIGN_VEC3 SPS_Vec3 n_axis = {0};
+  float l = SPS_Vec3Len(axis);
   if (SDL_fabsf(l) < SDL_FLT_EPSILON) {
     dest[0] = 0.0f;
     dest[1] = 0.0f;
@@ -117,7 +117,7 @@ void SOB_QuatMakeAxisAngle(const SOB_Vec3 axis, float angle, SOB_Quat dest) {
     return;
   }
 
-  SOB_Vec3Normalize(axis, n_axis);
+  SPS_Vec3Normalize(axis, n_axis);
   float s = SDL_sinf(angle * 0.5f) / l;
   dest[0] = n_axis[0] * s;
   dest[1] = n_axis[1] * s;
@@ -125,31 +125,31 @@ void SOB_QuatMakeAxisAngle(const SOB_Vec3 axis, float angle, SOB_Quat dest) {
   dest[3] = SDL_cosf(angle * 0.5f);
 }
 
-void SOB_QuatTransformVec3(const SOB_Quat q, const SOB_Vec3 v, SOB_Vec3 dest) {
-  SOB_ALIGN_VEC3 SOB_Vec3 a = {0};
-  SOB_ALIGN_VEC3 SOB_Vec3 b = {0};
-  SOB_ALIGN_VEC3 SOB_Vec3 c = {0};
-  SOB_ALIGN_VEC3 SOB_Vec3 i = {q[0], q[1], q[2]};
+void SPS_QuatTransformVec3(const SPS_Quat q, const SPS_Vec3 v, SPS_Vec3 dest) {
+  SPS_ALIGN_VEC3 SPS_Vec3 a = {0};
+  SPS_ALIGN_VEC3 SPS_Vec3 b = {0};
+  SPS_ALIGN_VEC3 SPS_Vec3 c = {0};
+  SPS_ALIGN_VEC3 SPS_Vec3 i = {q[0], q[1], q[2]};
   float s = q[3];
 
-  SOB_Vec3Scale(i, 2.0f * SOB_Vec3Dot(i, v), a);
-  SOB_Vec3Scale(v, s * s - SOB_Vec3Dot(i, i), b);
-  SOB_Vec3Cross(i, v, c);
-  SOB_Vec3Scale(c, 2.0f * s, c);
-  SOB_Vec3Add(a, b, dest);
-  SOB_Vec3Add(dest, c, dest);
+  SPS_Vec3Scale(i, 2.0f * SPS_Vec3Dot(i, v), a);
+  SPS_Vec3Scale(v, s * s - SPS_Vec3Dot(i, i), b);
+  SPS_Vec3Cross(i, v, c);
+  SPS_Vec3Scale(c, 2.0f * s, c);
+  SPS_Vec3Add(a, b, dest);
+  SPS_Vec3Add(dest, c, dest);
 }
 
-void SOB_QuatLookRotation(const SOB_Vec3 dir, const SOB_Vec3 up, SOB_Quat dest) {
-  SOB_ALIGN_MAT4 SOB_Mat4 m = {0};
-  SOB_ALIGN_VEC3 SOB_Vec3 a = {0};
-  SOB_ALIGN_VEC3 SOB_Vec3 b = {0};
-  SOB_ALIGN_VEC3 SOB_Vec3 c = {0};
+void SPS_QuatLookRotation(const SPS_Vec3 dir, const SPS_Vec3 up, SPS_Quat dest) {
+  SPS_ALIGN_MAT4 SPS_Mat4 m = {0};
+  SPS_ALIGN_VEC3 SPS_Vec3 a = {0};
+  SPS_ALIGN_VEC3 SPS_Vec3 b = {0};
+  SPS_ALIGN_VEC3 SPS_Vec3 c = {0};
 
-  SOB_Vec3Scale(dir, -1, c);
-  SOB_Vec3Cross(up, c, a);
-  SOB_Vec3Normalize(a, a);
-  SOB_Vec3Cross(c, a, b);
+  SPS_Vec3Scale(dir, -1, c);
+  SPS_Vec3Cross(up, c, a);
+  SPS_Vec3Normalize(a, a);
+  SPS_Vec3Cross(c, a, b);
 
   m[XX] = a[0];
   m[XY] = a[1];
@@ -171,20 +171,20 @@ void SOB_QuatLookRotation(const SOB_Vec3 dir, const SOB_Vec3 up, SOB_Quat dest) 
   m[WZ] = 0.0f;
   m[WW] = 1.0f;
 
-  SOB_Mat4ToQuat(m, dest);
+  SPS_Mat4ToQuat(m, dest);
 }
 
-void SOB_QuatToMat4(const SOB_Quat q, SOB_Mat4 dest) {
-  SOB_ALIGN_VEC3 SOB_Vec3 w_r = {1.0f, 0.0f, 0.0f};
-  SOB_ALIGN_VEC3 SOB_Vec3 w_u = {0.0f, 1.0f, 0.0f};
-  SOB_ALIGN_VEC3 SOB_Vec3 w_f = {0.0f, 0.0f, 1.0f};
+void SPS_QuatToMat4(const SPS_Quat q, SPS_Mat4 dest) {
+  SPS_ALIGN_VEC3 SPS_Vec3 w_r = {1.0f, 0.0f, 0.0f};
+  SPS_ALIGN_VEC3 SPS_Vec3 w_u = {0.0f, 1.0f, 0.0f};
+  SPS_ALIGN_VEC3 SPS_Vec3 w_f = {0.0f, 0.0f, 1.0f};
 
-  SOB_ALIGN_VEC3 SOB_Vec3 l_r = {0};
-  SOB_ALIGN_VEC3 SOB_Vec3 l_u = {0};
-  SOB_ALIGN_VEC3 SOB_Vec3 l_f = {0};
-  SOB_QuatTransformVec3(q, w_r, l_r);
-  SOB_QuatTransformVec3(q, w_u, l_u);
-  SOB_QuatTransformVec3(q, w_f, l_f);
+  SPS_ALIGN_VEC3 SPS_Vec3 l_r = {0};
+  SPS_ALIGN_VEC3 SPS_Vec3 l_u = {0};
+  SPS_ALIGN_VEC3 SPS_Vec3 l_f = {0};
+  SPS_QuatTransformVec3(q, w_r, l_r);
+  SPS_QuatTransformVec3(q, w_u, l_u);
+  SPS_QuatTransformVec3(q, w_f, l_f);
 
   dest[XX] = l_r[0];
   dest[XY] = l_u[0];
@@ -207,7 +207,7 @@ void SOB_QuatToMat4(const SOB_Quat q, SOB_Mat4 dest) {
   dest[WW] = 1.0f;
 }
 
-void SOB_Mat4Perspective(float fov, float aspect, float near, float far, SOB_Mat4 dest) {
+void SPS_Mat4Perspective(float fov, float aspect, float near, float far, SPS_Mat4 dest) {
   float const e = 1.0f / SDL_tanf(fov / 2.0f);
   float const f = 1.0f / (near - far);
 
@@ -232,7 +232,7 @@ void SOB_Mat4Perspective(float fov, float aspect, float near, float far, SOB_Mat
   dest[WW] = 0.0f;
 }
 
-void SOB_Mat4PerspectiveResize(const SOB_Mat4 src, float aspect, SOB_Mat4 dest) {
+void SPS_Mat4PerspectiveResize(const SPS_Mat4 src, float aspect, SPS_Mat4 dest) {
   if (src[XX] == 0.0f) {
     return;
   }
@@ -240,7 +240,7 @@ void SOB_Mat4PerspectiveResize(const SOB_Mat4 src, float aspect, SOB_Mat4 dest) 
   dest[XX] = dest[YY] / aspect;
 }
 
-bool SOB_Mat4Invert(const SOB_Mat4 src, SOB_Mat4 dest) {
+bool SPS_Mat4Invert(const SPS_Mat4 src, SPS_Mat4 dest) {
   float a = src[XX], b = src[XY], c = src[XZ], d = src[XW];
   float e = src[YX], f = src[YY], g = src[YZ], h = src[YW];
   float i = src[ZX], j = src[ZY], k = src[ZZ], l = src[ZW];
@@ -281,7 +281,7 @@ bool SOB_Mat4Invert(const SOB_Mat4 src, SOB_Mat4 dest) {
   return true;
 }
 
-void SOB_Mat4Mul(const SOB_Mat4 m1, const SOB_Mat4 m2, SOB_Mat4 dest) {
+void SPS_Mat4Mul(const SPS_Mat4 m1, const SPS_Mat4 m2, SPS_Mat4 dest) {
   float a00 = m1[XX], a01 = m1[XY], a02 = m1[XZ], a03 = m1[XW];
   float a10 = m1[YX], a11 = m1[YY], a12 = m1[YZ], a13 = m1[YW];
   float a20 = m1[ZX], a21 = m1[ZY], a22 = m1[ZZ], a23 = m1[ZW];
@@ -310,7 +310,7 @@ void SOB_Mat4Mul(const SOB_Mat4 m1, const SOB_Mat4 m2, SOB_Mat4 dest) {
   dest[WW] = a03 * b30 + a13 * b31 + a23 * b32 + a33 * b33;
 }
 
-void SOB_Mat4ToQuat(const SOB_Mat4 m, SOB_Quat dest) {
+void SPS_Mat4ToQuat(const SPS_Mat4 m, SPS_Quat dest) {
   float fx = m[XX] - m[YY] - m[ZZ];
   float fy = m[YY] - m[XX] - m[ZZ];
   float fz = m[ZZ] - m[XX] - m[YY];
@@ -365,14 +365,14 @@ void SOB_Mat4ToQuat(const SOB_Mat4 m, SOB_Quat dest) {
   }
 }
 
-void SOB_Mat4TransformVec4(const SOB_Mat4 m, const SOB_Vec4 v, SOB_Vec4 dest) {
+void SPS_Mat4TransformVec4(const SPS_Mat4 m, const SPS_Vec4 v, SPS_Vec4 dest) {
   dest[0] = m[XX] * v[0] + m[YX] * v[1] + m[ZX] * v[2] + m[WX] * v[3];
   dest[1] = m[XY] * v[0] + m[YY] * v[1] + m[ZY] * v[2] + m[WY] * v[3];
   dest[2] = m[XZ] * v[0] + m[YZ] * v[1] + m[ZZ] * v[2] + m[WZ] * v[3];
   dest[3] = m[XW] * v[0] + m[YW] * v[1] + m[ZW] * v[2] + m[WW] * v[3];
 }
 
-void SOB_XFormIdentity(SOB_XForm dest) {
+void SPS_XFormIdentity(SPS_XForm dest) {
   // rotation (quat)
   dest[0] = 0.0f;
   dest[1] = 0.0f;
@@ -390,7 +390,7 @@ void SOB_XFormIdentity(SOB_XForm dest) {
   dest[9] = 1.0f;
 }
 
-void SOB_XFormTranslate(const SOB_XForm src, const SOB_Vec3 position, SOB_XForm dest) {
+void SPS_XFormTranslate(const SPS_XForm src, const SPS_Vec3 position, SPS_XForm dest) {
   // rotation (quat)
   dest[0] = src[0];
   dest[1] = src[1];
@@ -408,19 +408,19 @@ void SOB_XFormTranslate(const SOB_XForm src, const SOB_Vec3 position, SOB_XForm 
   dest[9] = src[9];
 }
 
-void SOB_XFormLookAtPoint(const SOB_XForm src,
-                          const SOB_Vec3 position,
-                          const SOB_Vec3 up,
-                          SOB_XForm dest) {
-  SOB_ALIGN_VEC3 SOB_Vec3 dir = {0};
-  SOB_Vec3Sub(position, &src[4], dir);
-  SOB_Vec3Normalize(dir, dir);
-  SOB_QuatLookRotation(dir, up, &dest[0]);
+void SPS_XFormLookAtPoint(const SPS_XForm src,
+                          const SPS_Vec3 position,
+                          const SPS_Vec3 up,
+                          SPS_XForm dest) {
+  SPS_ALIGN_VEC3 SPS_Vec3 dir = {0};
+  SPS_Vec3Sub(position, &src[4], dir);
+  SPS_Vec3Normalize(dir, dir);
+  SPS_QuatLookRotation(dir, up, &dest[0]);
 }
 
-void SOB_XFormToView(const SOB_XForm xform, SOB_Mat4 view) {
-  SOB_ALIGN_VEC4 SOB_Vec4 pos = {xform[4], xform[5], xform[6], 1.0f};
-  SOB_QuatToMat4(xform, view);
-  SOB_Mat4TransformVec4(view, pos, &view[WX]);
-  SOB_Vec3Negate(&view[WX], &view[WX]);
+void SPS_XFormToView(const SPS_XForm xform, SPS_Mat4 view) {
+  SPS_ALIGN_VEC4 SPS_Vec4 pos = {xform[4], xform[5], xform[6], 1.0f};
+  SPS_QuatToMat4(xform, view);
+  SPS_Mat4TransformVec4(view, pos, &view[WX]);
+  SPS_Vec3Negate(&view[WX], &view[WX]);
 }

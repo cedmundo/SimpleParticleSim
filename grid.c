@@ -4,13 +4,13 @@
 #include "shader.h"
 
 typedef struct {
-  SOB_ALIGN_MAT4 SOB_Mat4 pv;
-  SOB_ALIGN_MAT4 SOB_Mat4 pv_inv;
+  SPS_ALIGN_MAT4 SPS_Mat4 pv;
+  SPS_ALIGN_MAT4 SPS_Mat4 pv_inv;
 } ViewParams;
 
-bool SOB_GridLoad(SOB_Grid* grid, SDL_GPUDevice* device, SDL_Window* window) {
+bool SPS_GridLoad(SPS_Grid* grid, SDL_GPUDevice* device, SDL_Window* window) {
   grid->device = device;
-  SOB_ShaderOptions vert_options = (SOB_ShaderOptions){
+  SPS_ShaderOptions vert_options = (SPS_ShaderOptions){
       .filename = "grid.vert",
       .stage = SDL_GPU_SHADERSTAGE_VERTEX,
       .sampler_count = 0,
@@ -18,12 +18,12 @@ bool SOB_GridLoad(SOB_Grid* grid, SDL_GPUDevice* device, SDL_Window* window) {
       .storage_buffer_count = 1,
       .storage_texture_count = 0,
   };
-  SDL_GPUShader* vert_shader = SOB_ShaderLoad(device, vert_options);
+  SDL_GPUShader* vert_shader = SPS_ShaderLoad(device, vert_options);
   if (vert_shader == NULL) {
     return false;
   }
 
-  SOB_ShaderOptions frag_options = (SOB_ShaderOptions){
+  SPS_ShaderOptions frag_options = (SPS_ShaderOptions){
       .filename = "grid.frag",
       .stage = SDL_GPU_SHADERSTAGE_FRAGMENT,
       .sampler_count = 0,
@@ -31,7 +31,7 @@ bool SOB_GridLoad(SOB_Grid* grid, SDL_GPUDevice* device, SDL_Window* window) {
       .storage_buffer_count = 0,
       .storage_texture_count = 0,
   };
-  SDL_GPUShader* frag_shader = SOB_ShaderLoad(device, frag_options);
+  SDL_GPUShader* frag_shader = SPS_ShaderLoad(device, frag_options);
   if (frag_shader == NULL) {
     return false;
   }
@@ -97,13 +97,13 @@ bool SOB_GridLoad(SOB_Grid* grid, SDL_GPUDevice* device, SDL_Window* window) {
   return true;
 }
 
-void SOB_GridDraw(SOB_Grid* grid,
-                  const SOB_Mat4 proj,
-                  const SOB_Mat4 view,
+void SPS_GridDraw(SPS_Grid* grid,
+                  const SPS_Mat4 proj,
+                  const SPS_Mat4 view,
                   SDL_GPURenderPass* render_pass) {
   ViewParams view_params = {0};
-  SOB_Mat4Mul(proj, view, view_params.pv);
-  SOB_Mat4Invert(view_params.pv, view_params.pv_inv);
+  SPS_Mat4Mul(proj, view, view_params.pv);
+  SPS_Mat4Invert(view_params.pv, view_params.pv_inv);
 
   SDL_BindGPUGraphicsPipeline(render_pass, grid->pipeline);
   {
@@ -138,7 +138,7 @@ void SOB_GridDraw(SOB_Grid* grid,
   }
 }
 
-void SOB_GridUnload(SOB_Grid* grid) {
+void SPS_GridUnload(SPS_Grid* grid) {
   SDL_ReleaseGPUGraphicsPipeline(grid->device, grid->pipeline);
   SDL_ReleaseGPUTransferBuffer(grid->device, grid->upload_transfer_buffer);
   SDL_ReleaseGPUBuffer(grid->device, grid->buffer);

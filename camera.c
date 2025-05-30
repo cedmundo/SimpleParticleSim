@@ -5,13 +5,13 @@
 #include <SDL3/SDL_log.h>
 #include <SDL3/SDL_mouse.h>
 
-void SOB_CameraLoad(SOB_Camera* camera, float aspect) {
-  SOB_Mat4Perspective(SOB_Rads(45.0f), aspect, 0.01f, 100.0f, camera->proj);
-  SOB_XFormIdentity(camera->xform);
+void SPS_CameraLoad(SPS_Camera* camera, float aspect) {
+  SPS_Mat4Perspective(SPS_Rads(45.0f), aspect, 0.01f, 100.0f, camera->proj);
+  SPS_XFormIdentity(camera->xform);
 
   // Temp: Move to 5,5,5 and look at the center
-  SOB_XFormTranslate(camera->xform, (SOB_Vec3){5.0f, 5.0f, 5.0f}, camera->xform);
-  SOB_XFormLookAtPoint(camera->xform, (SOB_Vec3){0.0f, 0.0f, 0.0f}, (SOB_Vec3){0.0f, 1.0f, 0.0f},
+  SPS_XFormTranslate(camera->xform, (SPS_Vec3){5.0f, 5.0f, 5.0f}, camera->xform);
+  SPS_XFormLookAtPoint(camera->xform, (SPS_Vec3){0.0f, 0.0f, 0.0f}, (SPS_Vec3){0.0f, 1.0f, 0.0f},
                        camera->xform);
   camera->radius = 10.0f;
   camera->target_radius = 10.0f;
@@ -25,27 +25,27 @@ void SOB_CameraLoad(SOB_Camera* camera, float aspect) {
   camera->zoom_out_limit = 30.0f;
 }
 
-void SOB_CameraViewportResize(SOB_Camera* camera, float aspect) {
-  SOB_Mat4PerspectiveResize(camera->proj, aspect, camera->proj);
+void SPS_CameraViewportResize(SPS_Camera* camera, float aspect) {
+  SPS_Mat4PerspectiveResize(camera->proj, aspect, camera->proj);
 }
 
-void SOB_CameraUpdate(SOB_Camera* camera,
+void SPS_CameraUpdate(SPS_Camera* camera,
                       SDL_Window* window,
                       float relative_mouse_wheel,
                       float dt) {
   // Update camera orbiting position using keyboard
   const bool* keyboard_state = SDL_GetKeyboardState(NULL);
-  SOB_ALIGN_VEC3 SOB_Vec3 world_up = {0.0, 1.0f, 0.0f};
-  SOB_ALIGN_VEC3 SOB_Vec3 input_forward = {0.0f, 0.0f, 0.0f};
-  SOB_ALIGN_VEC3 SOB_Vec3 input_left = {0.0f, 0.0f, 0.0f};
-  SOB_ALIGN_VEC3 SOB_Vec3 cam_forward = {0};
-  SOB_ALIGN_VEC3 SOB_Vec3 cam_left = {0};
-  SOB_ALIGN_VEC3 SOB_Vec3 move_dir = {0};
-  SOB_ALIGN_VEC3 SOB_Vec3 orbit_vec = {0};
-  SOB_ALIGN_QUAT SOB_Quat yaw_rot = {0};
-  SOB_Vec2 mouse_coords = {0};
-  float a = SOB_Rads(camera->azimuth);
-  float p = SOB_Rads(camera->polar);
+  SPS_ALIGN_VEC3 SPS_Vec3 world_up = {0.0, 1.0f, 0.0f};
+  SPS_ALIGN_VEC3 SPS_Vec3 input_forward = {0.0f, 0.0f, 0.0f};
+  SPS_ALIGN_VEC3 SPS_Vec3 input_left = {0.0f, 0.0f, 0.0f};
+  SPS_ALIGN_VEC3 SPS_Vec3 cam_forward = {0};
+  SPS_ALIGN_VEC3 SPS_Vec3 cam_left = {0};
+  SPS_ALIGN_VEC3 SPS_Vec3 move_dir = {0};
+  SPS_ALIGN_VEC3 SPS_Vec3 orbit_vec = {0};
+  SPS_ALIGN_QUAT SPS_Quat yaw_rot = {0};
+  SPS_Vec2 mouse_coords = {0};
+  float a = SPS_Rads(camera->azimuth);
+  float p = SPS_Rads(camera->polar);
 
   if (keyboard_state[SDL_SCANCODE_W]) {
     input_forward[2] = -1.0f;
@@ -60,13 +60,13 @@ void SOB_CameraUpdate(SOB_Camera* camera,
   }
 
   float move_speed_zoom_k = SDL_log(camera->radius * camera->radius + 1.5f);
-  SOB_QuatMakeAxisAngle(world_up, SDL_PI_F * 0.5f - a, yaw_rot);
-  SOB_QuatTransformVec3(yaw_rot, input_forward, cam_forward);
-  SOB_QuatTransformVec3(yaw_rot, input_left, cam_left);
-  SOB_Vec3Add(cam_left, cam_forward, move_dir);
-  SOB_Vec3Normalize(move_dir, move_dir);
-  SOB_Vec3Scale(move_dir, move_speed_zoom_k * dt, move_dir);
-  SOB_Vec3Add(move_dir, camera->orbit_point, camera->orbit_point);
+  SPS_QuatMakeAxisAngle(world_up, SDL_PI_F * 0.5f - a, yaw_rot);
+  SPS_QuatTransformVec3(yaw_rot, input_forward, cam_forward);
+  SPS_QuatTransformVec3(yaw_rot, input_left, cam_left);
+  SPS_Vec3Add(cam_left, cam_forward, move_dir);
+  SPS_Vec3Normalize(move_dir, move_dir);
+  SPS_Vec3Scale(move_dir, move_speed_zoom_k * dt, move_dir);
+  SPS_Vec3Add(move_dir, camera->orbit_point, camera->orbit_point);
 
   // Orbit the camera around the orbit point
   const SDL_MouseButtonFlags mouse_state =
@@ -74,8 +74,8 @@ void SOB_CameraUpdate(SOB_Camera* camera,
   if (SDL_BUTTON_MMASK & mouse_state) {
     SDL_CaptureMouse(true);
     SDL_SetWindowRelativeMouseMode(window, true);
-    camera->azimuth += SOB_Rads(mouse_coords[0] * camera->orbit_speed) * dt;
-    camera->polar = SDL_clamp(camera->polar + SOB_Rads(mouse_coords[1] * camera->orbit_speed) * dt,
+    camera->azimuth += SPS_Rads(mouse_coords[0] * camera->orbit_speed) * dt;
+    camera->polar = SDL_clamp(camera->polar + SPS_Rads(mouse_coords[1] * camera->orbit_speed) * dt,
                               -90.0f, 90.0f);
   } else {
     SDL_CaptureMouse(false);
@@ -86,8 +86,8 @@ void SOB_CameraUpdate(SOB_Camera* camera,
   orbit_vec[1] = camera->orbit_point[1] + camera->radius * SDL_sin(p);
   orbit_vec[2] = camera->orbit_point[2] + camera->radius * SDL_cos(p) * SDL_sin(a);
 
-  SOB_XFormTranslate(camera->xform, orbit_vec, camera->xform);
-  SOB_XFormLookAtPoint(camera->xform, camera->orbit_point, world_up, camera->xform);
+  SPS_XFormTranslate(camera->xform, orbit_vec, camera->xform);
+  SPS_XFormLookAtPoint(camera->xform, camera->orbit_point, world_up, camera->xform);
 
   // Interpolate the zoom to smooth transition
   if ((camera->radius > camera->zoom_in_limit && relative_mouse_wheel < 0.0f) ||
@@ -102,5 +102,5 @@ void SOB_CameraUpdate(SOB_Camera* camera,
   }
 
   // Apply transform and get view matrix
-  SOB_XFormToView(camera->xform, camera->view);
+  SPS_XFormToView(camera->xform, camera->view);
 }

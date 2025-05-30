@@ -1,5 +1,5 @@
-#ifndef SOB_GRID_H
-#define SOB_GRID_H
+#ifndef SPS_GRID_H
+#define SPS_GRID_H
 
 #include <SDL3/SDL_gpu.h>
 #include "xmath.h"
@@ -9,15 +9,15 @@ typedef struct {
   SDL_GPUGraphicsPipeline *pipeline;
   SDL_GPUBuffer *buffer;
   SDL_GPUTransferBuffer *upload_transfer_buffer;
-} SOB_Grid;
+} SPS_Grid;
 
 // Load the debug grid shaders and resources
-bool SOB_GridLoad(SOB_Grid *grid, SDL_GPUDevice *device, SDL_Window *window);
+bool SPS_GridLoad(SPS_Grid *grid, SDL_GPUDevice *device, SDL_Window *window);
 
 // Draw the debug grid on scene
-void SOB_GridDraw(SOB_Grid *grid, const SOB_Mat4 proj, const SOB_Mat4 view, SDL_GPURenderPass *render_pass);
+void SPS_GridDraw(SPS_Grid *grid, const SPS_Mat4 proj, const SPS_Mat4 view, SDL_GPURenderPass *render_pass);
 
 // Unload the debug grid resources
-void SOB_GridUnload(SOB_Grid *grid);
+void SPS_GridUnload(SPS_Grid *grid);
 
-#endif /* SOB_GRID_H */
+#endif /* SPS_GRID_H */

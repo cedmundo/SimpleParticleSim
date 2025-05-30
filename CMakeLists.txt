@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(SimpleOrbitCamera VERSION "0.0.1" LANGUAGES C)
+project(SimpleParticleSim VERSION "0.0.1" LANGUAGES C)
 
 # General configuration / variables
 set(CMAKE_C_STANDARD 11)
@@ -15,7 +15,7 @@ find_package(SDL3 REQUIRED CONFIG REQUIRED COMPONENTS SDL3)
 add_subdirectory(assets)
 
 # Main executbale
-set(MAIN_EXEC SimpleOrbitCamera${CMAKE_BUILD_TYPE})
+set(MAIN_EXEC SimpleParticleSim${CMAKE_BUILD_TYPE})
 add_executable(${MAIN_EXEC})
 add_dependencies(${MAIN_EXEC} grid_shader)
 target_sources(${MAIN_EXEC} PRIVATE xmath.c shader.c grid.c camera.c main.c)

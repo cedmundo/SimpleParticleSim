@@ -16,27 +16,27 @@
 #include "shader.h"
 
 #define GAME_CALLBACK __attribute__((unused))
-#define WINDOW_TITLE ("SimpleOrbitCamera")
-#define WINDOW_WIDTH (1280)
-#define WINDOW_HEIGHT (720)
+#define WINDOW_TITLE ("SimpleParticleSim")
+#define WINDOW_WIDTH (800)
+#define WINDOW_HEIGHT (800)
 
 typedef struct {
   SDL_Window* window;
   SDL_GPUDevice* device;
   SDL_GPUViewport viewport;
   struct {
-    SOB_Camera camera;
-    SOB_Grid grid;
+    SPS_Camera camera;
+    SPS_Grid grid;
   } scene;
   Uint64 last_tick;
   float delta_time;
   float relative_mouse_wheel;
-} SOB_GameState;
+} SPS_GameState;
 
-bool SOB_GameStateLoad(SOB_GameState* state);
-void SOB_GameStateUpdate(SOB_GameState* state);
-bool SOB_GameStateRender(SOB_GameState* state);
-void SOB_GameStateDestroy(SOB_GameState* state);
+bool SPS_GameStateLoad(SPS_GameState* state);
+void SPS_GameStateUpdate(SPS_GameState* state);
+bool SPS_GameStateRender(SPS_GameState* state);
+void SPS_GameStateDestroy(SPS_GameState* state);
 
 GAME_CALLBACK SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
   (void)argc;
@@ -48,7 +48,7 @@ GAME_CALLBACK SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) 
   }
 
   // Allocate game state
-  SOB_GameState* state = SDL_malloc(sizeof(SOB_GameState));
+  SPS_GameState* state = SDL_malloc(sizeof(SPS_GameState));
   if (state == NULL) {
     SDL_Log("Couldn't allocate memory for game state");
     return SDL_APP_FAILURE;
@@ -83,7 +83,7 @@ GAME_CALLBACK SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) 
       .max_depth = 1.0f,
   };
 
-  if (!SOB_GameStateLoad(state)) {
+  if (!SPS_GameStateLoad(state)) {
     SDL_Log("Couldn't load game state");
     return SDL_APP_FAILURE;
   }
@@ -93,16 +93,16 @@ GAME_CALLBACK SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) 
 }
 
 GAME_CALLBACK SDL_AppResult SDL_AppIterate(void* appstate) {
-  SOB_GameState* state = (SOB_GameState*)appstate;
+  SPS_GameState* state = (SPS_GameState*)appstate;
   Uint64 current_tick = SDL_GetPerformanceCounter();
   state->delta_time =
       (float)(current_tick - state->last_tick) / (float)SDL_GetPerformanceFrequency();
   state->last_tick = current_tick;
   {
-    SOB_GameStateUpdate(state);
+    SPS_GameStateUpdate(state);
 
     // TODO(cedmundo): Should we fix the framerate?
-    if (!SOB_GameStateRender(state)) {
+    if (!SPS_GameStateRender(state)) {
       return SDL_APP_FAILURE;
     }
   }
@@ -111,14 +111,14 @@ GAME_CALLBACK SDL_AppResult SDL_AppIterate(void* appstate) {
 }
 
 GAME_CALLBACK SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event) {
-  SOB_GameState* state = (SOB_GameState*)appstate;
+  SPS_GameState* state = (SPS_GameState*)appstate;
   switch (event->type) {
     case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
       return SDL_APP_SUCCESS;
     case SDL_EVENT_WINDOW_RESIZED:
       state->viewport.w = (float)event->window.data1;
       state->viewport.h = (float)event->window.data2;
-      SOB_CameraViewportResize(&state->scene.camera, state->viewport.w / state->viewport.h);
+      SPS_CameraViewportResize(&state->scene.camera, state->viewport.w / state->viewport.h);
       break;
     case SDL_EVENT_MOUSE_WHEEL:
       state->relative_mouse_wheel = -event->wheel.y;
@@ -130,12 +130,12 @@ GAME_CALLBACK SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event) {
 }
 
 GAME_CALLBACK void SDL_AppQuit(void* appstate, SDL_AppResult result) {
-  SOB_GameState* state = (SOB_GameState*)appstate;
+  SPS_GameState* state = (SPS_GameState*)appstate;
   if (result != SDL_APP_SUCCESS) {
     SDL_Log("Application quit with error: %d", result);
   }
 
-  SOB_GameStateDestroy(state);
+  SPS_GameStateDestroy(state);
   if (state->window != NULL) {
     SDL_ReleaseWindowFromGPUDevice(state->device, state->window);
     SDL_DestroyWindow(state->window);
@@ -147,22 +147,22 @@ GAME_CALLBACK void SDL_AppQuit(void* appstate, SDL_AppResult result) {
   SDL_free(state);
 }
 
-bool SOB_GameStateLoad(SOB_GameState* state) {
-  SOB_CameraLoad(&state->scene.camera, state->viewport.w / state->viewport.h);
-  if (!SOB_GridLoad(&state->scene.grid, state->device, state->window)) {
+bool SPS_GameStateLoad(SPS_GameState* state) {
+  SPS_CameraLoad(&state->scene.camera, state->viewport.w / state->viewport.h);
+  if (!SPS_GridLoad(&state->scene.grid, state->device, state->window)) {
     return false;
   }
 
   return true;
 }
 
-void SOB_GameStateUpdate(SOB_GameState* state) {
-  SOB_CameraUpdate(&state->scene.camera, state->window, state->relative_mouse_wheel,
+void SPS_GameStateUpdate(SPS_GameState* state) {
+  SPS_CameraUpdate(&state->scene.camera, state->window, state->relative_mouse_wheel,
                    state->delta_time);
   state->relative_mouse_wheel = 0.0f;
 }
 
-bool SOB_GameStateRender(SOB_GameState* state) {
+bool SPS_GameStateRender(SPS_GameState* state) {
   SDL_GPUCommandBuffer* cmd_buf = SDL_AcquireGPUCommandBuffer(state->device);
   if (cmd_buf == NULL) {
     SDL_Log("Couldn't acquire GPU command buffer: %s", SDL_GetError());
@@ -190,10 +190,10 @@ bool SOB_GameStateRender(SOB_GameState* state) {
       SDL_SetGPUViewport(render_pass, &state->viewport);
 
       // Get the camera where we are going to be drawing everything
-      SOB_Camera* camera = &state->scene.camera;
+      SPS_Camera* camera = &state->scene.camera;
 
       // Draw the grid
-      SOB_GridDraw(&state->scene.grid, camera->proj, camera->view, render_pass);
+      SPS_GridDraw(&state->scene.grid, camera->proj, camera->view, render_pass);
     }
     SDL_EndGPURenderPass(render_pass);
   }
@@ -204,6 +204,6 @@ bool SOB_GameStateRender(SOB_GameState* state) {
   return true;
 }
 
-void SOB_GameStateDestroy(SOB_GameState* state) {
-  SOB_GridUnload(&state->scene.grid);
+void SPS_GameStateDestroy(SPS_GameState* state) {
+  SPS_GridUnload(&state->scene.grid);
 }

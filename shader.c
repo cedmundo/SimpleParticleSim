@@ -4,8 +4,8 @@
 #include <SDL3/SDL_gpu.h>
 #include <SDL3/SDL_log.h>
 
-SDL_GPUShader *SOB_ShaderLoad(SDL_GPUDevice *device,
-                              SOB_ShaderOptions options) {
+SDL_GPUShader *SPS_ShaderLoad(SDL_GPUDevice *device,
+                              SPS_ShaderOptions options) {
   char full_path[512] = {0};
   SDL_snprintf(full_path, sizeof(full_path), "%sassets/shaders/%s.spv",
                SDL_GetBasePath(), options.filename);
