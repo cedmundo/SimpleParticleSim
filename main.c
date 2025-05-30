@@ -74,8 +74,8 @@ GAME_CALLBACK SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) 
 GAME_CALLBACK SDL_AppResult SDL_AppIterate(void* appstate) {
   SPS_Simulation* state = (SPS_Simulation*)appstate;
   Uint64 current_tick = SDL_GetPerformanceCounter();
-  state->delta_time =
-      (float)(current_tick - state->last_tick) / (float)SDL_GetPerformanceFrequency();
+  Uint64 delta_tick = current_tick - state->last_tick;
+  state->delta_time = (float)delta_tick / (float)SDL_GetPerformanceFrequency();
   state->last_tick = current_tick;
   {
     SPS_SimulationUpdate(state);

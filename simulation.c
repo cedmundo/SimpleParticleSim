@@ -3,8 +3,8 @@
 #include "simulation.h"
 
 bool SPS_SimulationLoad(SPS_Simulation* state) {
-  SPS_CameraLoad(&state->scene.camera, state->viewport.w / state->viewport.h);
-  if (!SPS_GridLoad(&state->scene.grid, state->device, state->window)) {
+  SPS_CameraLoad(&state->camera, state->viewport.w / state->viewport.h);
+  if (!SPS_GridLoad(&state->grid, state->device, state->window)) {
     return false;
   }
 
@@ -16,7 +16,7 @@ void SPS_SimulationEvent(SPS_Simulation* state, SDL_Event* event) {
     case SDL_EVENT_WINDOW_RESIZED:
       state->viewport.w = (float)event->window.data1;
       state->viewport.h = (float)event->window.data2;
-      SPS_CameraViewportResize(&state->scene.camera, state->viewport.w / state->viewport.h);
+      SPS_CameraViewportResize(&state->camera, state->viewport.w / state->viewport.h);
       break;
     case SDL_EVENT_MOUSE_WHEEL:
       state->relative_mouse_wheel = -event->wheel.y;
@@ -26,8 +26,7 @@ void SPS_SimulationEvent(SPS_Simulation* state, SDL_Event* event) {
 }
 
 void SPS_SimulationUpdate(SPS_Simulation* state) {
-  SPS_CameraUpdate(&state->scene.camera, state->window, state->relative_mouse_wheel,
-                   state->delta_time);
+  SPS_CameraUpdate(&state->camera, state->window, state->relative_mouse_wheel, state->delta_time);
   state->relative_mouse_wheel = 0.0f;
 }
 
@@ -59,10 +58,10 @@ bool SPS_SimulationRender(SPS_Simulation* state) {
       SDL_SetGPUViewport(render_pass, &state->viewport);
 
       // Get the camera where we are going to be drawing everything
-      SPS_Camera* camera = &state->scene.camera;
+      SPS_Camera* camera = &state->camera;
 
       // Draw the grid
-      SPS_GridDraw(&state->scene.grid, camera->proj, camera->view, render_pass);
+      SPS_GridDraw(&state->grid, camera->proj, camera->view, render_pass);
     }
     SDL_EndGPURenderPass(render_pass);
   }
@@ -74,5 +73,5 @@ bool SPS_SimulationRender(SPS_Simulation* state) {
 }
 
 void SPS_SimulationDestroy(SPS_Simulation* state) {
-  SPS_GridUnload(&state->scene.grid);
+  SPS_GridUnload(&state->grid);
 }

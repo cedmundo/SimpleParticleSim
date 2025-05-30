@@ -14,10 +14,8 @@ typedef struct {
   SDL_Window* window;
   SDL_GPUDevice* device;
   SDL_GPUViewport viewport;
-  struct {
-    SPS_Camera camera;
-    SPS_Grid grid;
-  } scene;
+  SPS_Camera camera;
+  SPS_Grid grid;
   Uint64 last_tick;
   float delta_time;
   float relative_mouse_wheel;
