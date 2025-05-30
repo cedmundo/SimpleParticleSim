@@ -11,7 +11,7 @@
 #include "grid.h"
 #include "shader.h"
 
-#define MAX_PARTICLES (10)
+#define MAX_PARTICLES (10000)
 
 typedef struct {
   SDL_Window* window;

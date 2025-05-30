@@ -9,7 +9,12 @@ typedef struct {
   SPS_ALIGN_MAT4 SPS_Mat4 pv;
 } Particle_ViewParams;
 
-void SPS_ParticleComputeForce(const SPS_Particle* particle, SPS_Vec3 dest);
+void particle_compute_force(const SPS_Particle* particle, SPS_Vec3 dest);
+float remap_value(float value,
+                  float start1,
+                  float stop1,
+                  float start2,
+                  float stop2);
 
 bool SPS_ParticleSystemInit(SPS_ParticleSystem* ps,
                             Uint64 count,
@@ -25,8 +30,10 @@ bool SPS_ParticleSystemInit(SPS_ParticleSystem* ps,
   // Initialize particle positions to random places
   SDL_memset(ps->particles, 0, sizeof(SPS_Particle) * count);
   for (Uint64 i = 0; i < count; i++) {
-    SPS_Vec3Make(SDL_randf() * 10.0f, SDL_randf() * 10.0f, SDL_randf() * 10.0f,
-                 ps->particles[i].position);
+    float rand_x = remap_value(SDL_randf() * 20.0f, 0.0f, 20.0f, -10.0f, 10.0f);
+    float rand_y = remap_value(SDL_randf() * 20.0f, 0.0f, 20.0f, 0.0f, 40.0f);
+    float rand_z = remap_value(SDL_randf() * 20.0f, 0.0f, 20.0f, -10.0f, 10.0f);
+    SPS_Vec3Make(rand_x, rand_y, rand_z, ps->particles[i].position);
     SPS_Vec3Make(0.0f, 0.0f, 0.0f, ps->particles[i].velocity);
     ps->particles[i].mass = 1.0f;
   }
@@ -198,7 +205,7 @@ void SPS_ParticleSystemUpdate(SPS_ParticleSystem* ps, float dt) {
 
   for (Uint64 i = 0; i < ps->particle_count; i++) {
     SPS_Particle* p = &ps->particles[i];
-    SPS_ParticleComputeForce(p, force);
+    particle_compute_force(p, force);
     SPS_Vec3Scale(force, 1.0f / p->mass, acceleration);
 
     // p.velocity = p.velocity + acceleration * dt
@@ -224,9 +231,17 @@ void SPS_ParticleSystemDestroy(SPS_ParticleSystem* ps) {
   }
 }
 
-void SPS_ParticleComputeForce(const SPS_Particle* particle, SPS_Vec3 dest) {
+void particle_compute_force(const SPS_Particle* particle, SPS_Vec3 dest) {
   // F = ma (gravity)
   dest[0] = 0.0f;
   dest[1] = particle->mass * -9.81;
   dest[2] = 0.0f;
+}
+
+float remap_value(float value,
+                  float start1,
+                  float stop1,
+                  float start2,
+                  float stop2) {
+  return start2 + (stop2 - start2) * ((value - start1) / (stop1 - start1));
 }
