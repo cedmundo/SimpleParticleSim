@@ -1,12 +1,13 @@
 #include "grid.h"
+#include "shader.h"
+
 #include <SDL3/SDL_gpu.h>
 #include <SDL3/SDL_log.h>
-#include "shader.h"
 
 typedef struct {
   SPS_ALIGN_MAT4 SPS_Mat4 pv;
   SPS_ALIGN_MAT4 SPS_Mat4 pv_inv;
-} ViewParams;
+} Grid_ViewParams;
 
 bool SPS_GridLoad(SPS_Grid* grid, SDL_GPUDevice* device, SDL_Window* window) {
   grid->device = device;
@@ -74,7 +75,7 @@ bool SPS_GridLoad(SPS_Grid* grid, SDL_GPUDevice* device, SDL_Window* window) {
   // Create buffer location for transform
   SDL_GPUBufferCreateInfo buffer_create_info = {
       .usage = SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ,
-      .size = sizeof(ViewParams),
+      .size = sizeof(Grid_ViewParams),
   };
   grid->buffer = SDL_CreateGPUBuffer(device, &buffer_create_info);
   if (grid->buffer == NULL) {
@@ -85,7 +86,7 @@ bool SPS_GridLoad(SPS_Grid* grid, SDL_GPUDevice* device, SDL_Window* window) {
   // Create transfer buffer handle
   SDL_GPUTransferBufferCreateInfo upload_transfer_buffer_create_info = {
       .usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD,
-      .size = sizeof(ViewParams),
+      .size = sizeof(Grid_ViewParams),
   };
   grid->upload_transfer_buffer =
       SDL_CreateGPUTransferBuffer(device, &upload_transfer_buffer_create_info);
@@ -101,7 +102,7 @@ void SPS_GridDraw(SPS_Grid* grid,
                   const SPS_Mat4 proj,
                   const SPS_Mat4 view,
                   SDL_GPURenderPass* render_pass) {
-  ViewParams view_params = {0};
+  Grid_ViewParams view_params = {0};
   SPS_Mat4Mul(proj, view, view_params.pv);
   SPS_Mat4Invert(view_params.pv, view_params.pv_inv);
 
@@ -110,7 +111,7 @@ void SPS_GridDraw(SPS_Grid* grid,
     // Copy data to the staging of the GPU
     void* transfer_point =
         SDL_MapGPUTransferBuffer(grid->device, grid->upload_transfer_buffer, 0);
-    memcpy(transfer_point, &view_params, sizeof(ViewParams));
+    SDL_memcpy(transfer_point, &view_params, sizeof(Grid_ViewParams));
     SDL_UnmapGPUTransferBuffer(grid->device, grid->upload_transfer_buffer);
 
     // Create a copy pass
@@ -125,7 +126,7 @@ void SPS_GridDraw(SPS_Grid* grid,
       SDL_GPUBufferRegion destination = {
           .buffer = grid->buffer,
           .offset = 0,
-          .size = sizeof(ViewParams),
+          .size = sizeof(Grid_ViewParams),
       };
 
       SDL_UploadToGPUBuffer(copy_pass, &source, &destination, false);

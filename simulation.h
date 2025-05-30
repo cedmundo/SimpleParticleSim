@@ -17,10 +17,9 @@ typedef struct {
   SDL_Window* window;
   SDL_GPUDevice* device;
   SDL_GPUViewport viewport;
+  SPS_ParticleSystem particle_system;
   SPS_Camera camera;
   SPS_Grid grid;
-  SPS_Particle *particles;
-  Uint64 particle_count;
   Uint64 last_tick;
   float iter_delta_time;
   float cur_frame_time;

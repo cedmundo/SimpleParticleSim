@@ -1,6 +1,7 @@
 #include <SDL3/SDL_log.h>
 #include <SDL3/SDL_timer.h>
 
+#include "particle.h"
 #include "simulation.h"
 
 bool SPS_SimulationLoad(SPS_Simulation* state) {
@@ -9,15 +10,12 @@ bool SPS_SimulationLoad(SPS_Simulation* state) {
     return false;
   }
 
-  state->particle_count = MAX_PARTICLES;
-  state->particles = SDL_malloc(sizeof(SPS_Particle) * state->particle_count);
-  if (state->particles == NULL) {
-    SDL_Log("Could not allocate memory for particles!");
+  if (!SPS_ParticleSystemInit(&state->particle_system, MAX_PARTICLES,
+                              state->device, state->window)) {
+    SDL_Log("Could not initialize particle system for %d particles!",
+            MAX_PARTICLES);
     return false;
   }
-  SDL_memset(state->particles, 0, sizeof(SPS_Particle) * state->particle_count);
-  SPS_ParticleArrayInit(state->particles, state->particle_count);
-  SPS_ParticleArrayDebug(state->particles, state->particle_count);
 
   return true;
 }
@@ -42,8 +40,8 @@ void SPS_SimulationUpdate(SPS_Simulation* state, float dt) {
     SPS_CameraUpdate(&state->camera, state->window, state->relative_mouse_wheel,
                      dt);
 
-    SPS_ParticleArraySimulate(state->particles, state->particle_count, dt);
-    SPS_ParticleArrayDebug(state->particles, state->particle_count);
+    SPS_ParticleSystemUpdate(&state->particle_system, dt);
+    // SPS_ParticleSystemDebug(&state->particle_system);
   }
   state->relative_mouse_wheel = 0.0f;
 }
@@ -56,16 +54,16 @@ bool SPS_SimulationRender(SPS_Simulation* state, float dt) {
   }
 
   // Get window swap chain texture
-  SDL_GPUTexture* swap_chain_texture = NULL;
+  SDL_GPUTexture* swapchain_texture = NULL;
   if (!SDL_WaitAndAcquireGPUSwapchainTexture(cmd_buf, state->window,
-                                             &swap_chain_texture, NULL, NULL)) {
+                                             &swapchain_texture, NULL, NULL)) {
     SDL_Log("Could not acquire swap chain texture: %s", SDL_GetError());
   }
 
   // Render when we have a texture
-  if (swap_chain_texture != NULL) {
+  if (swapchain_texture != NULL) {
     SDL_GPUColorTargetInfo color_target_info = {
-        .texture = swap_chain_texture,
+        .texture = swapchain_texture,
         .clear_color = (SDL_FColor){0.2f, 0.2f, 0.2f, 1.0f},
         .load_op = SDL_GPU_LOADOP_CLEAR,
         .store_op = SDL_GPU_STOREOP_STORE,
@@ -81,6 +79,10 @@ bool SPS_SimulationRender(SPS_Simulation* state, float dt) {
 
       // Draw the grid
       SPS_GridDraw(&state->grid, camera->proj, camera->view, render_pass);
+
+      // Draw the particles
+      SPS_ParticleSystemDraw(&state->particle_system, camera->proj,
+                             camera->view, render_pass);
     }
     SDL_EndGPURenderPass(render_pass);
   }
@@ -93,8 +95,5 @@ bool SPS_SimulationRender(SPS_Simulation* state, float dt) {
 
 void SPS_SimulationDestroy(SPS_Simulation* state) {
   SPS_GridUnload(&state->grid);
-  if (state->particles != NULL) {
-    SDL_free(state->particles);
-    state->particles = NULL;
-  }
+  SPS_ParticleSystemDestroy(&state->particle_system);
 }
