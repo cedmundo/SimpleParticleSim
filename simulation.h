@@ -17,7 +17,7 @@ typedef struct {
   SPS_Camera camera;
   SPS_Grid grid;
   Uint64 last_tick;
-  float delta_time;
+  float iter_delta_time;
   float cur_frame_time;
   float cur_update_time;
   float relative_mouse_wheel;
@@ -25,8 +25,8 @@ typedef struct {
 
 bool SPS_SimulationLoad(SPS_Simulation* state);
 void SPS_SimulationEvent(SPS_Simulation *state, SDL_Event *event);
-void SPS_SimulationUpdate(SPS_Simulation* state);
-bool SPS_SimulationRender(SPS_Simulation* state);
+void SPS_SimulationUpdate(SPS_Simulation* state, float dt);
+bool SPS_SimulationRender(SPS_Simulation* state, float dt);
 void SPS_SimulationDestroy(SPS_Simulation* state);
 
 #endif /* SPS_SIMULATION_H */

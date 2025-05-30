@@ -26,12 +26,13 @@ void SPS_SimulationEvent(SPS_Simulation* state, SDL_Event* event) {
   }
 }
 
-void SPS_SimulationUpdate(SPS_Simulation* state) {
-  SPS_CameraUpdate(&state->camera, state->window, state->relative_mouse_wheel, state->delta_time);
+void SPS_SimulationUpdate(SPS_Simulation* state, float dt) {
+  // Run simulation
+  SPS_CameraUpdate(&state->camera, state->window, state->relative_mouse_wheel, dt);
   state->relative_mouse_wheel = 0.0f;
 }
 
-bool SPS_SimulationRender(SPS_Simulation* state) {
+bool SPS_SimulationRender(SPS_Simulation* state, float dt) {
   SDL_GPUCommandBuffer* cmd_buf = SDL_AcquireGPUCommandBuffer(state->device);
   if (cmd_buf == NULL) {
     SDL_Log("Couldn't acquire GPU command buffer: %s", SDL_GetError());

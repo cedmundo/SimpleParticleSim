@@ -18,7 +18,7 @@ void SPS_CameraLoad(SPS_Camera* camera, float aspect) {
   camera->azimuth = 45.0f;
   camera->polar = 45.0f;
   camera->move_speed = 10.0f;
-  camera->orbit_speed = 720.0f;
+  camera->orbit_speed = 180.0f;
   camera->zoom_speed = 5.0f;
   camera->zoom_step = 2.0f;
   camera->zoom_in_limit = 0.1f;
