@@ -34,15 +34,13 @@ VSOutput vertexMain(VSInput input) {
   float2 curVertex = quad_vertices[input.vertexId];
   float3 particlePos = particles[input.instanceId].position;
   float4x4 model = {
-    { 0.1, 0, 0, 0 },  // mx
-    { 0, 0.1, 0, 0 },  // my
-    { 0, 0, 0.1, 0 },  // mz
-    // { particlePos.x, particlePos.y, particlePos.z, 1 },  // mw
-    { 0, 0, 0, 1 },  // mw
+    { 0.1, 0, 0, particlePos.x },  // mx
+    { 0, 0.1, 0, particlePos.y },  // my
+    { 0, 0, 0.1, particlePos.z },  // mz
+    { 0, 0, 0, 1 },                // mw
   };
 
   float4 vertexPos = float4(curVertex.x, curVertex.y, 0.0f, 1.0f);
   output.position = mul(mul(viewParams[0].pv, model), vertexPos);
-  // output.position = mul(viewParams[0].pv, vertexPos);
   return output;
 }

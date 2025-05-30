@@ -13,7 +13,8 @@ typedef struct {
 typedef struct {
   SDL_GPUDevice *device;
   SDL_GPUGraphicsPipeline *pipeline;
-  SDL_GPUBuffer *buffer;
+  SDL_GPUBuffer *vp_buffer;
+  SDL_GPUBuffer *pp_buffer;
   SDL_GPUTransferBuffer *upload_transfer_buffer;
   SPS_Particle *particles;
   Uint64 particle_count;
