@@ -19,7 +19,9 @@
 #define FIXED_UPDATE_TIME (0.0333333333333f)
 #define FIXED_FRAME_TIME (0.0166666666667f)
 
-GAME_CALLBACK SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
+GAME_CALLBACK SDL_AppResult SDL_AppInit(void** appstate,
+                                        int argc,
+                                        char** argv) {
   (void)argc;
   (void)argv;
 
@@ -31,27 +33,30 @@ GAME_CALLBACK SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) 
   // Allocate game state
   SPS_Simulation* state = SDL_malloc(sizeof(SPS_Simulation));
   if (state == NULL) {
-    SDL_Log("Couldn't allocate memory for game state");
+    SDL_Log("Could not allocate memory for game state");
     return SDL_APP_FAILURE;
   }
-  SDL_zero(*state);
+  SDL_memset(state, 0, sizeof(SPS_Simulation));
 
   // Initialize SDL-specific attributes of game state
-  state->device = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_SPIRV, true, "vulkan");
+  state->device =
+      SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_SPIRV, true, "vulkan");
   if (state->device == NULL) {
-    SDL_Log("Couldn't create GPU device: %s", SDL_GetError());
+    SDL_Log("Could not create GPU device: %s", SDL_GetError());
     return SDL_APP_FAILURE;
   }
 
-  state->window = SDL_CreateWindow(WINDOW_TITLE, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_RESIZABLE);
+  state->window = SDL_CreateWindow(WINDOW_TITLE, WINDOW_WIDTH, WINDOW_HEIGHT,
+                                   SDL_WINDOW_RESIZABLE);
   if (state->window == NULL) {
-    SDL_Log("Couldn't create window: %s", SDL_GetError());
+    SDL_Log("Could not create window: %s", SDL_GetError());
     return SDL_APP_FAILURE;
   }
-  SDL_SetWindowPosition(state->window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+  SDL_SetWindowPosition(state->window, SDL_WINDOWPOS_CENTERED,
+                        SDL_WINDOWPOS_CENTERED);
 
   if (!SDL_ClaimWindowForGPUDevice(state->device, state->window)) {
-    SDL_Log("Couldn't claim window for GPU device: %s", SDL_GetError());
+    SDL_Log("Could not claim window for GPU device: %s", SDL_GetError());
     return SDL_APP_FAILURE;
   }
 
@@ -65,7 +70,7 @@ GAME_CALLBACK SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) 
   };
 
   if (!SPS_SimulationLoad(state)) {
-    SDL_Log("Couldn't load game state");
+    SDL_Log("Could not load game state");
     return SDL_APP_FAILURE;
   }
 
@@ -76,14 +81,15 @@ GAME_CALLBACK SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) 
 GAME_CALLBACK SDL_AppResult SDL_AppIterate(void* appstate) {
   SPS_Simulation* state = (SPS_Simulation*)appstate;
   Uint64 current_tick = SDL_GetPerformanceCounter();
-  state->iter_delta_time =
-      (float)(current_tick - state->last_tick) / (float)SDL_GetPerformanceFrequency();
+  state->iter_delta_time = (float)(current_tick - state->last_tick) /
+                           (float)SDL_GetPerformanceFrequency();
   state->last_tick = current_tick;
   {
     state->cur_update_time += state->iter_delta_time;
     state->cur_frame_time += state->iter_delta_time;
     if (state->cur_update_time >= FIXED_UPDATE_TIME) {
-      SPS_SimulationUpdate(state, state->cur_update_time);
+      SPS_SimulationUpdate(state,
+                           FIXED_UPDATE_TIME);  // state->cur_update_time);
       state->cur_update_time = 0.0f;
     }
 

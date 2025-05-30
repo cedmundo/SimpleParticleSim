@@ -22,6 +22,12 @@
 #define WZ 14
 #define WW 15
 
+void SPS_Vec3Make(float x, float y, float z, SPS_Vec3 dest) {
+  dest[0] = x;
+  dest[1] = y;
+  dest[2] = z;
+}
+
 void SPS_Vec3Sub(const SPS_Vec3 a, const SPS_Vec3 b, SPS_Vec3 dest) {
   dest[0] = a[0] - b[0];
   dest[1] = a[1] - b[1];

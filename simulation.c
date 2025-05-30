@@ -9,6 +9,16 @@ bool SPS_SimulationLoad(SPS_Simulation* state) {
     return false;
   }
 
+  state->particle_count = MAX_PARTICLES;
+  state->particles = SDL_malloc(sizeof(SPS_Particle) * state->particle_count);
+  if (state->particles == NULL) {
+    SDL_Log("Could not allocate memory for particles!");
+    return false;
+  }
+  SDL_memset(state->particles, 0, sizeof(SPS_Particle) * state->particle_count);
+  SPS_ParticleArrayInit(state->particles, state->particle_count);
+  SPS_ParticleArrayDebug(state->particles, state->particle_count);
+
   return true;
 }
 
@@ -17,7 +27,8 @@ void SPS_SimulationEvent(SPS_Simulation* state, SDL_Event* event) {
     case SDL_EVENT_WINDOW_RESIZED:
       state->viewport.w = (float)event->window.data1;
       state->viewport.h = (float)event->window.data2;
-      SPS_CameraViewportResize(&state->camera, state->viewport.w / state->viewport.h);
+      SPS_CameraViewportResize(&state->camera,
+                               state->viewport.w / state->viewport.h);
       break;
     case SDL_EVENT_MOUSE_WHEEL:
       state->relative_mouse_wheel = -event->wheel.y;
@@ -27,23 +38,28 @@ void SPS_SimulationEvent(SPS_Simulation* state, SDL_Event* event) {
 }
 
 void SPS_SimulationUpdate(SPS_Simulation* state, float dt) {
-  // Run simulation
-  SPS_CameraUpdate(&state->camera, state->window, state->relative_mouse_wheel, dt);
+  {
+    SPS_CameraUpdate(&state->camera, state->window, state->relative_mouse_wheel,
+                     dt);
+
+    SPS_ParticleArraySimulate(state->particles, state->particle_count, dt);
+    SPS_ParticleArrayDebug(state->particles, state->particle_count);
+  }
   state->relative_mouse_wheel = 0.0f;
 }
 
 bool SPS_SimulationRender(SPS_Simulation* state, float dt) {
   SDL_GPUCommandBuffer* cmd_buf = SDL_AcquireGPUCommandBuffer(state->device);
   if (cmd_buf == NULL) {
-    SDL_Log("Couldn't acquire GPU command buffer: %s", SDL_GetError());
+    SDL_Log("Could not acquire GPU command buffer: %s", SDL_GetError());
     return false;
   }
 
   // Get window swap chain texture
   SDL_GPUTexture* swap_chain_texture = NULL;
-  if (!SDL_WaitAndAcquireGPUSwapchainTexture(cmd_buf, state->window, &swap_chain_texture, NULL,
-                                             NULL)) {
-    SDL_Log("Couldn't acquire swap chain texture: %s", SDL_GetError());
+  if (!SDL_WaitAndAcquireGPUSwapchainTexture(cmd_buf, state->window,
+                                             &swap_chain_texture, NULL, NULL)) {
+    SDL_Log("Could not acquire swap chain texture: %s", SDL_GetError());
   }
 
   // Render when we have a texture
@@ -55,7 +71,8 @@ bool SPS_SimulationRender(SPS_Simulation* state, float dt) {
         .store_op = SDL_GPU_STOREOP_STORE,
     };
 
-    SDL_GPURenderPass* render_pass = SDL_BeginGPURenderPass(cmd_buf, &color_target_info, 1, NULL);
+    SDL_GPURenderPass* render_pass =
+        SDL_BeginGPURenderPass(cmd_buf, &color_target_info, 1, NULL);
     {
       SDL_SetGPUViewport(render_pass, &state->viewport);
 
@@ -76,4 +93,8 @@ bool SPS_SimulationRender(SPS_Simulation* state, float dt) {
 
 void SPS_SimulationDestroy(SPS_Simulation* state) {
   SPS_GridUnload(&state->grid);
+  if (state->particles != NULL) {
+    SDL_free(state->particles);
+    state->particles = NULL;
+  }
 }

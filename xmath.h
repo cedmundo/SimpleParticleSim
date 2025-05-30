@@ -29,6 +29,9 @@ typedef float SPS_Mat4[16];
 typedef float SPS_XForm[10];
 // TODO(cedmundo): Add API to get the pointers of rot,pos,sca
 
+// Makes a new Vec3 using scalar components
+void SPS_Vec3Make(float x, float y, float z, SPS_Vec3 dest);
+
 // Subtract two vec3 into dest
 void SPS_Vec3Sub(const SPS_Vec3 a, const SPS_Vec3 b, SPS_Vec3 dest);
 

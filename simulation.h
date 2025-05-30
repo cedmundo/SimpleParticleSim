@@ -6,9 +6,12 @@
 #include <SDL3/SDL_gpu.h>
 // clang-format on
 
+#include "particle.h"
 #include "camera.h"
 #include "grid.h"
 #include "shader.h"
+
+#define MAX_PARTICLES (10)
 
 typedef struct {
   SDL_Window* window;
@@ -16,6 +19,8 @@ typedef struct {
   SDL_GPUViewport viewport;
   SPS_Camera camera;
   SPS_Grid grid;
+  SPS_Particle *particles;
+  Uint64 particle_count;
   Uint64 last_tick;
   float iter_delta_time;
   float cur_frame_time;
