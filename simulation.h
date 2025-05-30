@@ -18,6 +18,8 @@ typedef struct {
   SPS_Grid grid;
   Uint64 last_tick;
   float delta_time;
+  float cur_frame_time;
+  float cur_update_time;
   float relative_mouse_wheel;
 } SPS_Simulation;
 

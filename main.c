@@ -16,6 +16,8 @@
 #define WINDOW_TITLE ("SimpleParticleSim")
 #define WINDOW_WIDTH (800)
 #define WINDOW_HEIGHT (800)
+#define FIXED_UPDATE_TIME (0.0333333333333f)
+#define FIXED_FRAME_TIME (0.0166666666667f)
 
 GAME_CALLBACK SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
   (void)argc;
@@ -78,11 +80,18 @@ GAME_CALLBACK SDL_AppResult SDL_AppIterate(void* appstate) {
   state->delta_time = (float)delta_tick / (float)SDL_GetPerformanceFrequency();
   state->last_tick = current_tick;
   {
-    SPS_SimulationUpdate(state);
+    state->cur_update_time += state->delta_time;
+    if (state->cur_update_time >= FIXED_UPDATE_TIME) {
+      SPS_SimulationUpdate(state);
+      state->cur_update_time = 0.0f;
+    }
 
-    // TODO(cedmundo): Should we fix the framerate?
-    if (!SPS_SimulationRender(state)) {
-      return SDL_APP_FAILURE;
+    state->cur_frame_time += state->delta_time;
+    if (state->cur_frame_time >= FIXED_FRAME_TIME) {
+      if (!SPS_SimulationRender(state)) {
+        return SDL_APP_FAILURE;
+      }
+      state->cur_frame_time = 0.0f;
     }
   }
 
