@@ -1,6 +1,6 @@
 
 struct ViewParams {
-  float4x4 pv;
+  float4x4 projView;
 };
 
 struct Particle {
@@ -19,7 +19,7 @@ struct VSOutput {
 StructuredBuffer<ViewParams> viewParams;
 StructuredBuffer<Particle> particles;
 
-static const float2[] quad_vertices = {
+static const float2[] quadXYVertices = {
   float2(-1.0f, +1.0f),  // bottom left
   float2(-1.0f, -1.0f),  // top left
   float2(+1.0f, -1.0f),  // top right
@@ -31,7 +31,7 @@ static const float2[] quad_vertices = {
 [shader("vertex")]
 VSOutput vertexMain(VSInput input) {
   VSOutput output;
-  float2 curVertex = quad_vertices[input.vertexId];
+  float2 curXYVertex = quadXYVertices[input.vertexId];
   float3 particlePos = particles[input.instanceId].position;
   float4x4 model = {
     { 0.1, 0, 0, particlePos.x },  // mx
@@ -40,7 +40,7 @@ VSOutput vertexMain(VSInput input) {
     { 0, 0, 0, 1 },                // mw
   };
 
-  float4 vertexPos = float4(curVertex.x, curVertex.y, 0.0f, 1.0f);
-  output.position = mul(mul(viewParams[0].pv, model), vertexPos);
+  float4 vertexPos = float4(curXYVertex.x, curXYVertex.y, 0.0f, 1.0f);
+  output.position = mul(viewParams[0].projView * model, vertexPos);
   return output;
 }

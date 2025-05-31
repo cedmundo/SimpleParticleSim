@@ -6,13 +6,14 @@
 #include <SDL3/SDL_gpu.h>
 // clang-format on
 
-#include "particle.h"
 #include "camera.h"
 #include "grid.h"
+#include "particle_system.h"
 #include "shader.h"
 
 #define MAX_PARTICLES (10000)
 
+// Global values for the simulation
 typedef struct {
   SDL_Window* window;
   SDL_GPUDevice* device;
@@ -27,10 +28,19 @@ typedef struct {
   float relative_mouse_wheel;
 } SPS_Simulation;
 
+// Load the simulation.
 bool SPS_SimulationLoad(SPS_Simulation* state);
-void SPS_SimulationEvent(SPS_Simulation *state, SDL_Event *event);
+
+// Let simulation handle an event from SDL.
+void SPS_SimulationEvent(SPS_Simulation* state, SDL_Event* event);
+
+// Update the simulation (fixed rate).
 void SPS_SimulationUpdate(SPS_Simulation* state, float dt);
+
+// Render the simulation (fixed rate).
 bool SPS_SimulationRender(SPS_Simulation* state, float dt);
+
+// Release the resources creates by the simulation.
 void SPS_SimulationDestroy(SPS_Simulation* state);
 
 #endif /* SPS_SIMULATION_H */

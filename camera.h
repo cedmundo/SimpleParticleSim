@@ -1,9 +1,10 @@
 #ifndef SPS_CAMERA_H
 #define SPS_CAMERA_H
 
-#include "xmath.h"
 #include <SDL3/SDL_video.h>
+#include "xmath.h"
 
+// An orbiting camera implementation
 typedef struct {
   SPS_ALIGN_MAT4 SPS_Mat4 proj;
   SPS_ALIGN_MAT4 SPS_Mat4 view;
@@ -24,12 +25,15 @@ typedef struct {
 } SPS_Camera;
 
 // Load camera using perspective projection and default parameters
-void SPS_CameraLoad(SPS_Camera *camera, float aspect);
+void SPS_CameraLoad(SPS_Camera* camera, float aspect);
 
 // Notify the camera that viewport size has changed
-void SPS_CameraViewportResize(SPS_Camera *camera, float aspect);
+void SPS_CameraViewportResize(SPS_Camera* camera, float aspect);
 
 // Update the camera position using the default controls
-void SPS_CameraUpdate(SPS_Camera *camera, SDL_Window *window, float relative_mouse_wheel, float dt);
+void SPS_CameraUpdate(SPS_Camera* camera,
+                      SDL_Window* window,
+                      float relative_mouse_wheel,
+                      float dt);
 
 #endif /* SPS_CAMERA_H */

@@ -1,2 +1,2 @@
 add_shader_target(grid_shader grid)
-add_shader_target(particle_shader particle)
+add_shader_target(particle_system_shader particle_system)

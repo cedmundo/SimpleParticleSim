@@ -88,8 +88,8 @@ GAME_CALLBACK SDL_AppResult SDL_AppIterate(void* appstate) {
     state->cur_update_time += state->iter_delta_time;
     state->cur_frame_time += state->iter_delta_time;
     if (state->cur_update_time >= FIXED_UPDATE_TIME) {
-      SPS_SimulationUpdate(state,
-                           FIXED_UPDATE_TIME);  // state->cur_update_time);
+      // should probably use state->cur_update_time
+      SPS_SimulationUpdate(state, FIXED_UPDATE_TIME);
       state->cur_update_time = 0.0f;
     }
 

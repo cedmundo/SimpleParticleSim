@@ -25,7 +25,8 @@ typedef float SPS_Quat[4];
 // Floating point matrix of 4x4 components, column major
 typedef float SPS_Mat4[16];
 
-// Floating point transform with rotation:quat,position:vec3,scale:vec3 components
+// Floating point transform with rotation:quat,position:vec3,scale:vec3
+// components
 typedef float SPS_XForm[10];
 // TODO(cedmundo): Add API to get the pointers of rot,pos,sca
 
@@ -84,7 +85,11 @@ void SPS_QuatLookRotation(const SPS_Vec3 dir, const SPS_Vec3 up, SPS_Quat dest);
 void SPS_QuatToMat4(const SPS_Quat q, SPS_Mat4 dest);
 
 // Create a prespective matrix
-void SPS_Mat4Perspective(float fov, float aspect, float near, float far, SPS_Mat4 dest);
+void SPS_Mat4Perspective(float fov,
+                         float aspect,
+                         float near,
+                         float far,
+                         SPS_Mat4 dest);
 
 // Resize a perspective matrix using a new aspect ratio
 void SPS_Mat4PerspectiveResize(const SPS_Mat4 src, float aspect, SPS_Mat4 dest);
@@ -105,10 +110,15 @@ void SPS_Mat4TransformVec4(const SPS_Mat4 m, const SPS_Vec4 v, SPS_Vec4 dest);
 void SPS_XFormIdentity(SPS_XForm dest);
 
 // Set the position of a transform to the given vec3
-void SPS_XFormTranslate(const SPS_XForm src, const SPS_Vec3 position, SPS_XForm dest);
+void SPS_XFormTranslate(const SPS_XForm src,
+                        const SPS_Vec3 position,
+                        SPS_XForm dest);
 
 // Rotate the transform to look at a point in the scene
-void SPS_XFormLookAtPoint(const SPS_XForm src, const SPS_Vec3 position, const SPS_Vec3 up, SPS_XForm dest);
+void SPS_XFormLookAtPoint(const SPS_XForm src,
+                          const SPS_Vec3 position,
+                          const SPS_Vec3 up,
+                          SPS_XForm dest);
 
 // Create a view matrix from an transform
 void SPS_XFormToView(const SPS_XForm xform, SPS_Mat4 view);

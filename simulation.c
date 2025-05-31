@@ -1,7 +1,7 @@
 #include <SDL3/SDL_log.h>
 #include <SDL3/SDL_timer.h>
 
-#include "particle.h"
+#include "particle_system.h"
 #include "simulation.h"
 
 bool SPS_SimulationLoad(SPS_Simulation* state) {

@@ -1,4 +1,4 @@
-#include "particle.h"
+#include "particle_system.h"
 #include "shader.h"
 #include "xmath.h"
 
