@@ -56,6 +56,12 @@ void SPS_Vec3Cross(const SPS_Vec3 a, const SPS_Vec3 b, SPS_Vec3 dest) {
   dest[2] = a[0] * b[1] - a[1] * b[0];
 }
 
+void SPS_Vec3Copy(const SPS_Vec3 src, SPS_Vec3 dest) {
+  dest[0] = src[0];
+  dest[1] = src[1];
+  dest[2] = src[2];
+}
+
 float SPS_Vec3LenSq(const SPS_Vec3 v) {
   return SPS_Vec3Dot(v, v);
 }
@@ -146,7 +152,9 @@ void SPS_QuatTransformVec3(const SPS_Quat q, const SPS_Vec3 v, SPS_Vec3 dest) {
   SPS_Vec3Add(dest, c, dest);
 }
 
-void SPS_QuatLookRotation(const SPS_Vec3 dir, const SPS_Vec3 up, SPS_Quat dest) {
+void SPS_QuatLookRotation(const SPS_Vec3 dir,
+                          const SPS_Vec3 up,
+                          SPS_Quat dest) {
   SPS_ALIGN_MAT4 SPS_Mat4 m = {0};
   SPS_ALIGN_VEC3 SPS_Vec3 a = {0};
   SPS_ALIGN_VEC3 SPS_Vec3 b = {0};
@@ -213,7 +221,11 @@ void SPS_QuatToMat4(const SPS_Quat q, SPS_Mat4 dest) {
   dest[WW] = 1.0f;
 }
 
-void SPS_Mat4Perspective(float fov, float aspect, float near, float far, SPS_Mat4 dest) {
+void SPS_Mat4Perspective(float fov,
+                         float aspect,
+                         float near,
+                         float far,
+                         SPS_Mat4 dest) {
   float const e = 1.0f / SDL_tanf(fov / 2.0f);
   float const f = 1.0f / (near - far);
 
@@ -238,7 +250,9 @@ void SPS_Mat4Perspective(float fov, float aspect, float near, float far, SPS_Mat
   dest[WW] = 0.0f;
 }
 
-void SPS_Mat4PerspectiveResize(const SPS_Mat4 src, float aspect, SPS_Mat4 dest) {
+void SPS_Mat4PerspectiveResize(const SPS_Mat4 src,
+                               float aspect,
+                               SPS_Mat4 dest) {
   if (src[XX] == 0.0f) {
     return;
   }
@@ -396,7 +410,9 @@ void SPS_XFormIdentity(SPS_XForm dest) {
   dest[9] = 1.0f;
 }
 
-void SPS_XFormTranslate(const SPS_XForm src, const SPS_Vec3 position, SPS_XForm dest) {
+void SPS_XFormTranslate(const SPS_XForm src,
+                        const SPS_Vec3 position,
+                        SPS_XForm dest) {
   // rotation (quat)
   dest[0] = src[0];
   dest[1] = src[1];
@@ -429,4 +445,8 @@ void SPS_XFormToView(const SPS_XForm xform, SPS_Mat4 view) {
   SPS_QuatToMat4(xform, view);
   SPS_Mat4TransformVec4(view, pos, &view[WX]);
   SPS_Vec3Negate(&view[WX], &view[WX]);
+}
+
+void SPS_XFormGetPosition(const SPS_XForm xform, SPS_Vec3 position) {
+  SPS_Vec3Copy(&xform[4], position);
 }

@@ -7,7 +7,8 @@
 
 typedef struct {
   SPS_ALIGN_MAT4 SPS_Mat4 pv;
-} Particle_ViewParams;
+  SPS_ALIGN_VEC3 SPS_Vec3 view_pos;
+} ParticleSystemUniforms;
 
 void particle_compute_force(const SPS_Particle* particle, SPS_Vec3 dest);
 float remap_value(float value,
@@ -16,53 +17,57 @@ float remap_value(float value,
                   float start2,
                   float stop2);
 
-bool SPS_ParticleSystemInit(SPS_ParticleSystem* ps,
+bool SPS_ParticleSystemLoad(SPS_ParticleSystem* ps,
                             Uint64 count,
                             SDL_GPUDevice* device,
                             SDL_Window* window) {
+  size_t instances_buffer_size = sizeof(SPS_Particle) * count;
   ps->device = device;
-  ps->particle_count = count;
-  ps->particles = SDL_aligned_alloc(16, sizeof(SPS_Particle) * count);
-  if (ps->particles == NULL) {
+  ps->instances_count = count;
+  ps->instances = SDL_aligned_alloc(16, instances_buffer_size);
+  if (ps->instances == NULL) {
     return false;
   }
 
   // Initialize particle positions to random places
-  SDL_memset(ps->particles, 0, sizeof(SPS_Particle) * count);
+  SDL_memset(ps->instances, 0, instances_buffer_size);
   for (Uint64 i = 0; i < count; i++) {
-    float rand_x = remap_value(SDL_randf(), 0.0f, 1.0f, -10.0f, 10.0f);
-    float rand_y = remap_value(SDL_randf(), 0.0f, 1.0f, 0.0f, 40.0f);
-    float rand_z = remap_value(SDL_randf(), 0.0f, 1.0f, -10.0f, 10.0f);
-    SPS_Vec3Make(rand_x, rand_y, rand_z, ps->particles[i].position);
-    SPS_Vec3Make(0.0f, 0.0f, 0.0f, ps->particles[i].velocity);
-    ps->particles[i].mass = 1.0f;
+    float rx = remap_value(SDL_randf(), 0.0f, 1.0f, -10.0f, 10.0f);
+    float ry = remap_value(SDL_randf(), 0.0f, 1.0f, 0.0f, 40.0f);
+    float rz = remap_value(SDL_randf(), 0.0f, 1.0f, -10.0f, 10.0f);
+    ps->instances[i].position[0] = rx;
+    ps->instances[i].position[1] = ry;
+    ps->instances[i].position[2] = rz;
+    ps->instances[i].scale = 0.1f;
+    ps->instances[i].velocity[0] = 0.0f;
+    ps->instances[i].velocity[0] = 0.0f;
+    ps->instances[i].velocity[0] = 0.0f;
+    ps->instances[i].mass = 1.0f;
   }
 
-  // Initialize pipeline
-  SPS_ShaderOptions vs_opts = {
-      .filename = "particle.vert",
+  SPS_ShaderOptions vert_options = (SPS_ShaderOptions){
+      .filename = "particle_system.vert",
       .stage = SDL_GPU_SHADERSTAGE_VERTEX,
       .sampler_count = 0,
-      .uniform_buffer_count = 0,
-      .storage_buffer_count = 2,
+      .uniform_buffer_count = 1,
+      .storage_buffer_count = 1,
       .storage_texture_count = 0,
   };
-  SPS_ShaderOptions fs_opts = {
-      .filename = "particle.frag",
+  SDL_GPUShader* vert_shader = SPS_ShaderLoad(device, vert_options);
+  if (vert_shader == NULL) {
+    return false;
+  }
+
+  SPS_ShaderOptions frag_options = (SPS_ShaderOptions){
+      .filename = "particle_system.frag",
       .stage = SDL_GPU_SHADERSTAGE_FRAGMENT,
       .sampler_count = 0,
       .uniform_buffer_count = 0,
       .storage_buffer_count = 0,
       .storage_texture_count = 0,
   };
-
-  SDL_GPUShader* vs = SPS_ShaderLoad(device, vs_opts);
-  if (vs == NULL) {
-    return false;
-  }
-
-  SDL_GPUShader* fs = SPS_ShaderLoad(device, fs_opts);
-  if (fs == NULL) {
+  SDL_GPUShader* frag_shader = SPS_ShaderLoad(device, frag_options);
+  if (frag_shader == NULL) {
     return false;
   }
 
@@ -88,47 +93,39 @@ bool SPS_ParticleSystemInit(SPS_ParticleSystem* ps,
   SDL_GPUGraphicsPipelineCreateInfo pipeline_create_info = {
       .target_info = color_target_info,
       .primitive_type = SDL_GPU_PRIMITIVETYPE_TRIANGLELIST,
-      .vertex_shader = vs,
-      .fragment_shader = fs,
+      .vertex_shader = vert_shader,
+      .fragment_shader = frag_shader,
   };
   ps->pipeline = SDL_CreateGPUGraphicsPipeline(device, &pipeline_create_info);
 
-  SDL_ReleaseGPUShader(device, vs);
-  SDL_ReleaseGPUShader(device, fs);
+  SDL_ReleaseGPUShader(device, vert_shader);
+  SDL_ReleaseGPUShader(device, frag_shader);
 
   if (ps->pipeline == NULL) {
-    SDL_Log("Could not create graphics pipeline for particle system!: %s",
-            SDL_GetError());
+    SDL_Log("Couldn't create graphics pipeline for billboard");
     return false;
   }
 
-  // Create buffer and transfer buffer
-  size_t vp_buffer_size = sizeof(Particle_ViewParams);
-  size_t pp_buffer_size = sizeof(SPS_Particle) * ps->particle_count;
-  SDL_GPUBufferCreateInfo buffer_create_info = {0};
-
-  buffer_create_info.usage = SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ;
-  buffer_create_info.size = vp_buffer_size;
-  ps->vp_buffer = SDL_CreateGPUBuffer(device, &buffer_create_info);
-  if (ps->vp_buffer == NULL) {
+  // Create buffer location for transform
+  SDL_GPUBufferCreateInfo buffer_create_info = {
+      .usage = SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ,
+      .size = instances_buffer_size,
+  };
+  ps->buffer = SDL_CreateGPUBuffer(device, &buffer_create_info);
+  if (ps->buffer == NULL) {
+    SDL_Log("Couldn't create buffer to store the params of debug grid");
     return false;
   }
 
-  buffer_create_info.usage = SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ;
-  buffer_create_info.size = pp_buffer_size;
-  ps->pp_buffer = SDL_CreateGPUBuffer(device, &buffer_create_info);
-  if (ps->pp_buffer == NULL) {
-    return false;
-  }
-
+  // Create transfer buffer handle
   SDL_GPUTransferBufferCreateInfo upload_transfer_buffer_create_info = {
       .usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD,
-      .size = vp_buffer_size + pp_buffer_size,
+      .size = instances_buffer_size,
   };
   ps->upload_transfer_buffer =
       SDL_CreateGPUTransferBuffer(device, &upload_transfer_buffer_create_info);
   if (ps->upload_transfer_buffer == NULL) {
-    SDL_Log("Could not create transfer buffer of particle system");
+    SDL_Log("Couldn't create transfer buffer of debug grid");
     return false;
   }
 
@@ -136,8 +133,8 @@ bool SPS_ParticleSystemInit(SPS_ParticleSystem* ps,
 }
 
 void SPS_ParticleSystemDebug(SPS_ParticleSystem* ps) {
-  for (Uint64 i = 0; i < ps->particle_count; i++) {
-    SPS_Particle p = ps->particles[i];
+  for (Uint64 i = 0; i < ps->instances_count; i++) {
+    SPS_Particle p = ps->instances[i];
     SDL_Log("particle[%ld] = (%+.2f, %+.2f, %+.2f) mass = %+.2f\n", i,
             p.position[0], p.position[1], p.position[2], p.mass);
   }
@@ -146,18 +143,20 @@ void SPS_ParticleSystemDebug(SPS_ParticleSystem* ps) {
 bool SPS_ParticleSystemDraw(SPS_ParticleSystem* ps,
                             const SPS_Mat4 proj,
                             const SPS_Mat4 view,
+                            const SPS_Vec3 view_pos,
+                            SDL_GPUCommandBuffer* cmd_buf,
                             SDL_GPURenderPass* render_pass) {
-  Particle_ViewParams view_params = {0};
-  SPS_Mat4Mul(proj, view, view_params.pv);
+  ParticleSystemUniforms uniforms = {0};
+  SPS_Mat4Mul(proj, view, uniforms.pv);
+  SPS_Vec3Copy(view_pos, uniforms.view_pos);
 
   SDL_BindGPUGraphicsPipeline(render_pass, ps->pipeline);
   {
-    // Copy view params and particle positions to the GPU
+    // Copy data to the staging of the GPU
     void* transfer_point =
         SDL_MapGPUTransferBuffer(ps->device, ps->upload_transfer_buffer, 0);
-    SDL_memcpy(transfer_point, &view_params, sizeof(Particle_ViewParams));
-    SDL_memcpy(transfer_point + sizeof(Particle_ViewParams), ps->particles,
-               sizeof(SPS_Particle) * ps->particle_count);
+    SDL_memcpy(transfer_point, ps->instances,
+               sizeof(SPS_Vec4) * ps->instances_count);
     SDL_UnmapGPUTransferBuffer(ps->device, ps->upload_transfer_buffer);
 
     // Create a copy pass
@@ -165,35 +164,26 @@ bool SPS_ParticleSystemDraw(SPS_ParticleSystem* ps,
         SDL_AcquireGPUCommandBuffer(ps->device);
     SDL_GPUCopyPass* copy_pass = SDL_BeginGPUCopyPass(upload_cmd_buf);
     {
-      SDL_GPUTransferBufferLocation src;
-      SDL_GPUBufferRegion dst;
+      SDL_GPUTransferBufferLocation source = {
+          .transfer_buffer = ps->upload_transfer_buffer,
+          .offset = 0,
+      };
+      SDL_GPUBufferRegion destination = {
+          .buffer = ps->buffer,
+          .offset = 0,
+          .size = sizeof(SPS_Vec4) * ps->instances_count,
+      };
 
-      // Upload view params
-      src.transfer_buffer = ps->upload_transfer_buffer;
-      src.offset = 0;
-
-      dst.buffer = ps->vp_buffer;
-      dst.offset = 0;
-      dst.size = sizeof(Particle_ViewParams);
-      SDL_UploadToGPUBuffer(copy_pass, &src, &dst, false);
-
-      // Upload positions
-      src.transfer_buffer = ps->upload_transfer_buffer;
-      src.offset = sizeof(Particle_ViewParams);
-
-      dst.buffer = ps->pp_buffer;
-      dst.offset = 0;
-      dst.size = sizeof(SPS_Particle) * ps->particle_count;
-      SDL_UploadToGPUBuffer(copy_pass, &src, &dst, false);
-
+      SDL_UploadToGPUBuffer(copy_pass, &source, &destination, false);
       SDL_EndGPUCopyPass(copy_pass);
       SDL_SubmitGPUCommandBuffer(upload_cmd_buf);
     }
-
-    SDL_BindGPUVertexStorageBuffers(render_pass, 0, &ps->vp_buffer, 1);
-    SDL_BindGPUVertexStorageBuffers(render_pass, 1, &ps->pp_buffer, 1);
-    SDL_DrawGPUPrimitives(render_pass, 6, ps->particle_count, 0, 0);
   }
+
+  SDL_PushGPUVertexUniformData(cmd_buf, 0, &uniforms,
+                               sizeof(ParticleSystemUniforms));
+  SDL_BindGPUVertexStorageBuffers(render_pass, 0, &ps->buffer, 1);
+  SDL_DrawGPUPrimitives(render_pass, 6, ps->instances_count, 0, 0);
 
   return true;
 }
@@ -203,10 +193,10 @@ void SPS_ParticleSystemUpdate(SPS_ParticleSystem* ps, float dt) {
   SPS_ALIGN_VEC3 SPS_Vec3 acceleration = {0};
   SPS_ALIGN_VEC3 SPS_Vec3 aux = {0};
 
-  for (Uint64 i = 0; i < ps->particle_count; i++) {
-    SPS_Particle* p = &ps->particles[i];
+  for (Uint64 i = 0; i < ps->instances_count; i++) {
+    SPS_Particle* p = &ps->instances[i];
     particle_compute_force(p, force);
-    SPS_Vec3Scale(force, 1.0f / p->mass, acceleration);
+    SPS_Vec3Scale(force, 1.0f / SDL_max(p->mass, 0.00001f), acceleration);
 
     // p.velocity = p.velocity + acceleration * dt
     SPS_Vec3Scale(acceleration, dt, aux);
@@ -221,13 +211,12 @@ void SPS_ParticleSystemUpdate(SPS_ParticleSystem* ps, float dt) {
 void SPS_ParticleSystemDestroy(SPS_ParticleSystem* ps) {
   SDL_ReleaseGPUGraphicsPipeline(ps->device, ps->pipeline);
   SDL_ReleaseGPUTransferBuffer(ps->device, ps->upload_transfer_buffer);
-  SDL_ReleaseGPUBuffer(ps->device, ps->vp_buffer);
-  SDL_ReleaseGPUBuffer(ps->device, ps->pp_buffer);
+  SDL_ReleaseGPUBuffer(ps->device, ps->buffer);
 
-  if (ps->particles != NULL) {
-    SDL_aligned_free(ps->particles);
-    ps->particles = NULL;
-    ps->particle_count = 0;
+  if (ps->instances != NULL) {
+    SDL_aligned_free(ps->instances);
+    ps->instances = NULL;
+    ps->instances_count = 0;
   }
 }
 

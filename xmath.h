@@ -57,6 +57,9 @@ void SPS_Vec3Normalize(const SPS_Vec3 src, SPS_Vec3 dest);
 // Negates a vec3 into dest
 void SPS_Vec3Negate(const SPS_Vec3 src, SPS_Vec3 dest);
 
+// Copies values from src into dest
+void SPS_Vec3Copy(const SPS_Vec3 src, SPS_Vec3 dest);
+
 // Creates a quaternion using axis and angle into dest
 void SPS_QuatMakeAxisAngle(const SPS_Vec3 axis, float angle, SPS_Quat dest);
 
@@ -125,6 +128,9 @@ void SPS_XFormToView(const SPS_XForm xform, SPS_Mat4 view);
 
 // Create a model matrix from an transform
 void SPS_XFormToModel(const SPS_XForm xform, SPS_Mat4 model);
+
+// Get the position of a transform
+void SPS_XFormGetPosition(const SPS_XForm xform, SPS_Vec3 position);
 
 #define SPS_Rads(x) ((x)*0.01745329f)
 #endif /* SPS_XMATH_H */

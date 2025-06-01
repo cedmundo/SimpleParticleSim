@@ -10,7 +10,7 @@ bool SPS_SimulationLoad(SPS_Simulation* state) {
     return false;
   }
 
-  if (!SPS_ParticleSystemInit(&state->particle_system, MAX_PARTICLES,
+  if (!SPS_ParticleSystemLoad(&state->particle_system, MAX_PARTICLES,
                               state->device, state->window)) {
     SDL_Log("Could not initialize particle system for %d particles!",
             MAX_PARTICLES);
@@ -82,8 +82,10 @@ bool SPS_SimulationRender(SPS_Simulation* state, float dt) {
                    render_pass);
 
       // Draw the particles
+      SPS_ALIGN_VEC3 SPS_Vec3 view_pos = {0};
+      SPS_XFormGetPosition(camera->xform, view_pos);
       SPS_ParticleSystemDraw(&state->particle_system, camera->proj,
-                             camera->view, render_pass);
+                             camera->view, view_pos, cmd_buf, render_pass);
     }
     SDL_EndGPURenderPass(render_pass);
   }
