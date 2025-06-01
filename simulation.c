@@ -78,7 +78,8 @@ bool SPS_SimulationRender(SPS_Simulation* state, float dt) {
       SPS_Camera* camera = &state->camera;
 
       // Draw the grid
-      SPS_GridDraw(&state->grid, camera->proj, camera->view, render_pass);
+      SPS_GridDraw(&state->grid, camera->proj, camera->view, cmd_buf,
+                   render_pass);
 
       // Draw the particles
       SPS_ParticleSystemDraw(&state->particle_system, camera->proj,
@@ -94,6 +95,6 @@ bool SPS_SimulationRender(SPS_Simulation* state, float dt) {
 }
 
 void SPS_SimulationDestroy(SPS_Simulation* state) {
-  SPS_GridUnload(&state->grid);
+  SPS_GridDestroy(&state->grid);
   SPS_ParticleSystemDestroy(&state->particle_system);
 }

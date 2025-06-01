@@ -8,8 +8,6 @@
 typedef struct {
   SDL_GPUDevice* device;
   SDL_GPUGraphicsPipeline* pipeline;
-  SDL_GPUBuffer* buffer;
-  SDL_GPUTransferBuffer* upload_transfer_buffer;
 } SPS_Grid;
 
 // Load the debug grid shaders and resources
@@ -19,9 +17,10 @@ bool SPS_GridLoad(SPS_Grid* grid, SDL_GPUDevice* device, SDL_Window* window);
 void SPS_GridDraw(SPS_Grid* grid,
                   const SPS_Mat4 proj,
                   const SPS_Mat4 view,
+                  SDL_GPUCommandBuffer* cmd_buf,
                   SDL_GPURenderPass* render_pass);
 
 // Unload the debug grid resources
-void SPS_GridUnload(SPS_Grid* grid);
+void SPS_GridDestroy(SPS_Grid* grid);
 
 #endif /* SPS_GRID_H */

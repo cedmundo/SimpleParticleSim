@@ -22,7 +22,7 @@ bool SPS_ParticleSystemInit(SPS_ParticleSystem* ps,
                             SDL_Window* window) {
   ps->device = device;
   ps->particle_count = count;
-  ps->particles = SDL_malloc(sizeof(SPS_Particle) * count);
+  ps->particles = SDL_aligned_alloc(16, sizeof(SPS_Particle) * count);
   if (ps->particles == NULL) {
     return false;
   }
@@ -30,9 +30,9 @@ bool SPS_ParticleSystemInit(SPS_ParticleSystem* ps,
   // Initialize particle positions to random places
   SDL_memset(ps->particles, 0, sizeof(SPS_Particle) * count);
   for (Uint64 i = 0; i < count; i++) {
-    float rand_x = remap_value(SDL_randf() * 20.0f, 0.0f, 20.0f, -10.0f, 10.0f);
-    float rand_y = remap_value(SDL_randf() * 20.0f, 0.0f, 20.0f, 0.0f, 40.0f);
-    float rand_z = remap_value(SDL_randf() * 20.0f, 0.0f, 20.0f, -10.0f, 10.0f);
+    float rand_x = remap_value(SDL_randf(), 0.0f, 1.0f, -10.0f, 10.0f);
+    float rand_y = remap_value(SDL_randf(), 0.0f, 1.0f, 0.0f, 40.0f);
+    float rand_z = remap_value(SDL_randf(), 0.0f, 1.0f, -10.0f, 10.0f);
     SPS_Vec3Make(rand_x, rand_y, rand_z, ps->particles[i].position);
     SPS_Vec3Make(0.0f, 0.0f, 0.0f, ps->particles[i].velocity);
     ps->particles[i].mass = 1.0f;
@@ -225,7 +225,7 @@ void SPS_ParticleSystemDestroy(SPS_ParticleSystem* ps) {
   SDL_ReleaseGPUBuffer(ps->device, ps->pp_buffer);
 
   if (ps->particles != NULL) {
-    SDL_free(ps->particles);
+    SDL_aligned_free(ps->particles);
     ps->particles = NULL;
     ps->particle_count = 0;
   }
